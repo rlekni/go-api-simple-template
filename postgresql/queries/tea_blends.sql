@@ -26,3 +26,20 @@ RETURNING *;
 -- name: DeleteTeaBlend :exec
 DELETE FROM tea_blends
 WHERE id = $1;
+
+-- name: CreateLocation :one
+INSERT INTO locations (
+  tea_blend_id,
+  name,
+  quantity
+) VALUES (
+  $1, $2, $3
+)
+RETURNING *;
+
+-- name: UpdateLocationQuantity :one
+UPDATE locations
+  set quantity = $2,
+  updated_at = NOW()
+WHERE tea_blend_id = $1
+RETURNING *;

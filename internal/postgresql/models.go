@@ -9,6 +9,15 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type Location struct {
+	ID         uuid.UUID
+	TeaBlendID uuid.UUID
+	Name       string
+	Quantity   int32
+	CreatedAt  pgtype.Timestamp
+	UpdatedAt  pgtype.Timestamp
+}
+
 type TeaBlend struct {
 	ID          uuid.UUID
 	Name        string

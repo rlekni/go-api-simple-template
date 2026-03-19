@@ -12,6 +12,37 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createLocation = `-- name: CreateLocation :one
+INSERT INTO locations (
+  tea_blend_id,
+  name,
+  quantity
+) VALUES (
+  $1, $2, $3
+)
+RETURNING id, tea_blend_id, name, quantity, created_at, updated_at
+`
+
+type CreateLocationParams struct {
+	TeaBlendID uuid.UUID
+	Name       string
+	Quantity   int32
+}
+
+func (q *Queries) CreateLocation(ctx context.Context, arg CreateLocationParams) (Location, error) {
+	row := q.db.QueryRow(ctx, createLocation, arg.TeaBlendID, arg.Name, arg.Quantity)
+	var i Location
+	err := row.Scan(
+		&i.ID,
+		&i.TeaBlendID,
+		&i.Name,
+		&i.Quantity,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
 const createTeaBlend = `-- name: CreateTeaBlend :one
 INSERT INTO tea_blends (
   name,
@@ -97,6 +128,33 @@ func (q *Queries) ListTeaBlends(ctx context.Context) ([]TeaBlend, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateLocationQuantity = `-- name: UpdateLocationQuantity :one
+UPDATE locations
+  set quantity = $2,
+  updated_at = NOW()
+WHERE tea_blend_id = $1
+RETURNING id, tea_blend_id, name, quantity, created_at, updated_at
+`
+
+type UpdateLocationQuantityParams struct {
+	TeaBlendID uuid.UUID
+	Quantity   int32
+}
+
+func (q *Queries) UpdateLocationQuantity(ctx context.Context, arg UpdateLocationQuantityParams) (Location, error) {
+	row := q.db.QueryRow(ctx, updateLocationQuantity, arg.TeaBlendID, arg.Quantity)
+	var i Location
+	err := row.Scan(
+		&i.ID,
+		&i.TeaBlendID,
+		&i.Name,
+		&i.Quantity,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
 }
 
 const updateTeaBlend = `-- name: UpdateTeaBlend :one
